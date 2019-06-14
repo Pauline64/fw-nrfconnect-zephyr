@@ -187,6 +187,7 @@ struct bt_gatt_include {
 	u16_t			end_handle;
 };
 
+
 /* Characteristic Properties Bit field values */
 
 /** @def BT_GATT_CHRC_BROADCAST

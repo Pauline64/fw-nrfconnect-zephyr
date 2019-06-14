@@ -851,6 +851,7 @@ ssize_t bt_gatt_attr_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 			  const void *value, u16_t value_len)
 {
 	u16_t len;
+  
 
 	if (offset > value_len) {
 		return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
@@ -858,8 +859,8 @@ ssize_t bt_gatt_attr_read(struct bt_conn *conn, const struct bt_gatt_attr *attr,
 
 	len = MIN(buf_len, value_len - offset);
 
-	BT_DBG("handle 0x%04x offset %u length %u", attr->handle, offset,
-	       len);
+	//BT_DBG("handle 0x%04x offset %u length %u", attr->handle, offset,
+	//       len);
 
 	memcpy(buf, (u8_t *)value + offset, len);
 
@@ -909,13 +910,13 @@ ssize_t bt_gatt_attr_read_included(struct bt_conn *conn,
 				   const struct bt_gatt_attr *attr,
 				   void *buf, u16_t len, u16_t offset)
 {
-	struct bt_gatt_attr *incl = attr->user_data;
-	struct bt_uuid *uuid = incl->user_data;
+	struct bt_gatt_include *incl = attr->user_data;
+	struct bt_uuid *uuid = incl->uuid;
 	struct gatt_incl pdu;
 	u8_t value_len;
 
 	/* first attr points to the start handle */
-	pdu.start_handle = sys_cpu_to_le16(incl->handle);
+	pdu.start_handle = sys_cpu_to_le16(incl->start_handle);
 	value_len = sizeof(pdu.start_handle) + sizeof(pdu.end_handle);
 
 	/*
@@ -929,7 +930,7 @@ ssize_t bt_gatt_attr_read_included(struct bt_conn *conn,
 	}
 
 	/* Lookup for service end handle */
-	bt_gatt_foreach_attr(incl->handle + 1, 0xffff, get_service_handles,
+	bt_gatt_foreach_attr(incl->start_handle + 1, 0xffff, get_service_handles,
 			     &pdu);
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, &pdu, value_len);
